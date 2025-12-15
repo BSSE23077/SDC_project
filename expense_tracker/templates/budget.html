@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-gray-900">Set Monthly Budget</h1>
+    
+    <div class="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+        <form method="POST" action="{{ url_for('budget') }}">
+            <div class="mb-8">
+                <label class="block text-gray-700 font-semibold mb-2 text-lg">Total Monthly Budget ($)</label>
+                <input type="number" name="total_budget" step="0.01" 
+                       value="{{ budget.total_budget if budget else '' }}" required 
+                       class="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-900 transition text-2xl font-semibold">
+                <p class="text-gray-500 text-sm mt-3">Set your total monthly spending limit to track your expenses effectively</p>
+            </div>
+            
+            <button type="submit" 
+                    class="w-full bg-gray-900 text-white py-4 rounded-lg hover:bg-gray-800 font-semibold text-lg transition">
+                Save Budget
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

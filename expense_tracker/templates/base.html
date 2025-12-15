@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kharcha Book</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+
+{% if current_user.is_authenticated %}
+<div x-data="{ collapsed: false }" class="h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside :class="collapsed ? 'w-16' : 'w-64'"
+           class="bg-gray-900 text-white flex flex-col transition-all duration-200">
+
+        <!-- Top: logo + collapse button -->
+        <div class="px-4 py-4 border-b border-gray-800 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-coins text-xl text-yellow-400"></i>
+                <h1 x-show="!collapsed" class="text-xl font-bold tracking-tight">KharchaBook</h1>
+            </div>
+            <button @click="collapsed = !collapsed"
+                    class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-800 text-gray-300 text-xs">
+                <i :class="collapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+            </button>
+        </div>
+
+        <!-- Nav links (WITHOUT profile) -->
+        <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+            <a href="{{ url_for('dashboard') }}"
+               class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
+                      {% if request.endpoint == 'dashboard' %}bg-gray-800{% endif %}">
+                <i class="fas fa-home w-6 text-center"></i>
+                <span x-show="!collapsed" class="ml-3 text-sm">Dashboard</span>
+            </a>
+            <a href="{{ url_for('add_expense') }}"
+               class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
+                      {% if request.endpoint == 'add_expense' %}bg-gray-800{% endif %}">
+                <i class="fas fa-plus-circle w-6 text-center"></i>
+                <span x-show="!collapsed" class="ml-3 text-sm">Add Expense</span>
+            </a>
+            <a href="{{ url_for('view_expenses') }}"
+               class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
+                      {% if request.endpoint == 'view_expenses' %}bg-gray-800{% endif %}">
+                <i class="fas fa-list-ul w-6 text-center"></i>
+                <span x-show="!collapsed" class="ml-3 text-sm">View Expenses</span>
+            </a>
+            <a href="{{ url_for('budget') }}"
+               class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
+                      {% if request.endpoint == 'budget' %}bg-gray-800{% endif %}">
+                <i class="fas fa-wallet w-6 text-center"></i>
+                <span x-show="!collapsed" class="ml-3 text-sm">Budget</span>
+            </a>
+            <a href="{{ url_for('scan_receipt') }}"
+   class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
+          {% if request.endpoint == 'scan_receipt' %}bg-gray-800{% endif %}">
+    <i class="fas fa-receipt w-6 text-center"></i>
+    <span x-show="!collapsed" class="ml-3 text-sm">Scan Receipt</span>
+</a>
+
+        </nav>
+
+        <!-- Bottom: clickable profile bar + logout -->
+        <div class="px-3 py-4 border-t border-gray-800">
+            <!-- Profile bar acts as Profile button -->
+            <a href="{{ url_for('profile') }}"
+               class="flex items-center space-x-3 mb-3 hover:bg-gray-800 px-2 py-2 rounded-lg">
+                <div class="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
+                    <span class="text-sm font-semibold">
+                        {{ current_user.name[:1] | upper }}
+                    </span>
+                </div>
+                <div x-show="!collapsed" class="text-xs">
+                    <p class="font-semibold">{{ current_user.name }}</p>
+                    <p class="text-gray-400 truncate max-w-[9rem]">{{ current_user.email }}</p>
+                </div>
+            </a>
+
+            <!-- Logout aligned right -->
+            <div class="flex justify-end">
+                <a href="{{ url_for('logout') }}"
+                   class="inline-flex items-center text-xs bg-red-600 hover:bg-red-500 px-3 py-1.5 rounded-lg font-semibold">
+                    <i class="fas fa-sign-out-alt mr-1"></i>
+                    <span x-show="!collapsed">Logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main content (scrollable) -->
+    <main class="flex-1 overflow-y-auto">
+        <div class="px-8 pt-6">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{% if category == 'error' %}
+                                     bg-red-50 border-l-4 border-red-600 text-red-800
+                                     {% else %}
+                                     bg-green-50 border-l-4 border-green-600 text-green-800
+                                     {% endif %} px-6 py-3 rounded-r shadow-sm mb-4">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="px-8 py-4 pb-10">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{% else %}
+<!-- Login / register without sidebar -->
+<div class="min-h-screen bg-gray-900 flex items-center justify-center px-4">
+    <div class="w-full max-w-md">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{% if category == 'error' %}
+                                 bg-red-50 border-l-4 border-red-600 text-red-800
+                                 {% else %}
+                                 bg-green-50 border-l-4 border-green-600 text-green-800
+                                 {% endif %} px-6 py-3 rounded-r shadow-sm mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block auth_content %}{% endblock %}
+    </div>
+</div>
+{% endif %}
+
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+</html>
