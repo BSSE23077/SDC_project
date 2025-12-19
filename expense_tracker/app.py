@@ -6,6 +6,9 @@ from datetime import datetime
 import os
 from sqlalchemy import extract, func
 from datetime import datetime
+import csv
+from io import TextIOWrapper
+
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-later'
@@ -322,6 +325,7 @@ def view_expenses():
         years=years,
     )
 
+
 @app.route('/scan-receipt', methods=['GET', 'POST'])
 @login_required
 def scan_receipt():
@@ -353,6 +357,54 @@ def scan_receipt():
         extracted=extracted,
         suggested=suggested
     )
+
+import csv
+from io import TextIOWrapper
+
+@app.route('/import-expenses', methods=['GET', 'POST'])
+@login_required
+def import_expenses():
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash('Please choose a CSV file.', 'error')
+            return redirect(url_for('import_expenses'))
+
+        try:
+            # Decode file stream as text
+            stream = TextIOWrapper(file.stream, encoding='utf-8')
+            reader = csv.DictReader(stream)
+
+            count = 0
+            for row in reader:
+                if not row.get('amount') or not row.get('date'):
+                    continue
+
+                amount = float(row['amount'])
+                date_val = datetime.strptime(row['date'], '%Y-%m-%d').date()
+                category = row.get('category') or 'Other'
+                merchant = row.get('merchant') or ''
+                description = row.get('description') or ''
+
+                exp = Expense(
+                    user_id=current_user.id,
+                    amount=amount,
+                    category=category,
+                    merchant=merchant,
+                    description=description,
+                    date=date_val
+                )
+                db.session.add(exp)
+                count += 1
+
+            db.session.commit()
+            flash(f'Imported {count} expenses from CSV.', 'success')
+            return redirect(url_for('view_expenses'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Failed to import file. Please check format.', 'error')
+
+    return render_template('import_expenses.html')
 
 # ==================== RUN APP ====================
 if __name__ == '__main__':

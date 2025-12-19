@@ -54,6 +54,13 @@
                 <i class="fas fa-wallet w-6 text-center"></i>
                 <span x-show="!collapsed" class="ml-3 text-sm">Budget</span>
             </a>
+            <a href="{{ url_for('import_expenses') }}"
+   class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
+          {% if request.endpoint == 'import_expenses' %}bg-gray-800{% endif %}">
+    <i class="fas fa-file-import w-6 text-center"></i>
+    <span x-show="!collapsed" class="ml-3 text-sm">Import CSV</span>
+</a>
+
             <a href="{{ url_for('scan_receipt') }}"
    class="flex items-center px-2 py-2 rounded-lg hover:bg-gray-800
           {% if request.endpoint == 'scan_receipt' %}bg-gray-800{% endif %}">
